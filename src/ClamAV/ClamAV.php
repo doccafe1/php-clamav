@@ -130,38 +130,13 @@ abstract class ClamAV
      */
     public function fileScan(string $file): bool
     {
-        $response = $this->sendCommand('SCAN ' . $file);
+        $out = $this->sendCommand('SCAN ' . $file);
 
-        if (!is_string($response) || trim($response) === '') {
-            throw new \RuntimeException('Empty or invalid response from ClamAV daemon.');
-        }
+        $out = \explode(':', $out);
+        $stats = \end($out);
 
-        // Expected format: "/path/to/file: STATUS"
-        $parts = explode(':', $response);
-
-        if (count($parts) < 2) {
-            throw new \RuntimeException(
-                'Unexpected ClamAV response format: ' . $response
-            );
-        }
-
-        $status = trim(end($parts));
-
-        if ($status === 'OK') {
-            return true;  // Clean
-        }
-
-        if ($status === 'FOUND') {
-            return false; // Infected
-        }
-
-        // Any other output (e.g. "ERROR", "UNKNOWN", empty, etc.) → exception
-        throw new \RuntimeException(
-            'Unexpected ClamAV status: ' . $status . ' | Full response: ' . $response
-        );
+        return \trim($stats) === 'OK';
     }
-
-
 
     /**
      * Scan file or directory (recursively) with archive support
