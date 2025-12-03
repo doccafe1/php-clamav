@@ -151,7 +151,7 @@ abstract class ClamAV
             return true;  // Clean
         }
 
-        if ($status === 'FOUND') {
+        if (str_ends_with($status, 'FOUND')) {
             return false; // Infected
         }
 
